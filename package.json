@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/chen328/cli/issues"
   },
-  "homepage": "https://github.com/chen328/cli#readme"
+  "homepage": "https://github.com/chen328/cli#readme",
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
 }
