@@ -1,5 +1,5 @@
 {
-  "name": "@chen328/utils",
+  "name": "@gufai/utils",
   "version": "1.0.2",
   "description": "> TODO: description",
   "author": "chen328 <820960276@qq.com>",
@@ -29,5 +29,5 @@
   "dependencies": {
     "colors": "^1.4.0"
   },
-  "gitHead": "edb4d274c431081429dd3002a64a75d3dd877fd1"
+  "gitHead": "b5cd20ec04a10a5581b21b489dbe6e7edd2b9c7c"
 }
