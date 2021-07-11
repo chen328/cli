@@ -25,4 +25,4 @@ const argv = yargs(hideBin(process.argv))
 //   })
   .help().argv;
 
-console.log(argv, "注册命令".red);
+// console.log(argv, "注册参数".red);
