@@ -10,6 +10,3 @@ log.addLevel("success", 2000, { fg: "green", bold: true }); //增加命令
 
 module.exports = log;
 
-// function log() {
-//     return npmlog
-// }

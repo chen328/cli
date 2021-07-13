@@ -1,6 +1,7 @@
 "use strict";
 
 module.exports = core;
+//relative link
 const path = require("path");
 const semver = require("semver");
 const log = require("@gufai/log");
@@ -14,7 +15,7 @@ const dotenv = require("dotenv");
 const pkg = require("../package.json");
 const constant = require("./constant");
 
-function core() {
+async function core() {
   try {
     checkPkgVersion();
     checkNodeVersion();
@@ -22,8 +23,31 @@ function core() {
     checkUseHome();
     formatArgv();
     checkEnv();
+    checkGlobalUpdate();
   } catch (e) {
     log.error(e.message);
+  }
+}
+
+async function checkGlobalUpdate() {
+  //1.获取当前版本号和模块名
+  const currentVersion = pkg.version;
+  const npmName = pkg.name;
+  //2.调用npm API,获取所有版本号
+  //3.提取所有版本号,比对哪些版本号是大于当前版本号
+  //4.获取最新的版本号,提示用户更新到该版本
+  const { getNpmSemverVersion } = require("@gufai/get-npm-info");
+  const versions = await getNpmSemverVersion(currentVersion, npmName);
+  if (
+    versions &&
+    versions.length > 0 &&
+    semver.gte(versions[0], currentVersion)
+  ) {
+    //最新版本大于现在版本
+    log.warn(
+      `请手动更新${npmName},当前版本${currentVersion},最新版本${versions[0]}, command: npm install -g npmName`
+        .yellow
+    );
   }
 }
 
@@ -38,6 +62,7 @@ function checkEnv() {
     });
   }
   createDefaultConfig();
+  //debug mode log
   log.verbose("环境变量", process.env.CLI_HOME_PATH);
 }
 

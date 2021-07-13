@@ -26,3 +26,4 @@ const argv = yargs(hideBin(process.argv))
   .help().argv;
 
 // console.log(argv, "注册参数".red);
+//TODO:增加debug命令 文档
