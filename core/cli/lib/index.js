@@ -15,15 +15,16 @@ const dotenv = require("dotenv");
 const pkg = require("../package.json");
 const constant = require("./constant");
 
-async function core() {
+async function core(args) {
   try {
+    // console.log(args,'args')
     checkPkgVersion();
     checkNodeVersion();
     checkRoot();
     checkUseHome();
     formatArgv();
     checkEnv();
-    checkGlobalUpdate();
+    await checkGlobalUpdate();
   } catch (e) {
     log.error(e.message);
   }
@@ -41,7 +42,7 @@ async function checkGlobalUpdate() {
   if (
     versions &&
     versions.length > 0 &&
-    semver.gte(versions[0], currentVersion)
+    semver.gt(versions[0], currentVersion)
   ) {
     //最新版本大于现在版本
     log.warn(
