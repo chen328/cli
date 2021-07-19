@@ -33,6 +33,7 @@
   "dependencies": {
     "@gufai/get-npm-info": "file:../../utils/get-npm-info",
     "@gufai/log": "file:../../utils/log",
+    "@gufai/init": "file:../../commands/init",
     "@gufai/utils": "^1.0.0",
     "colors": "^1.4.0",
     "commander": "^8.0.0",

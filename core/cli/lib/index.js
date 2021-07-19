@@ -10,7 +10,8 @@ const userHome = require("user-home");
 const pathExists = require("path-exists").sync;
 const argv = require("minimist")(process.argv.slice(2));
 const dotenv = require("dotenv");
-
+const { program } = require("commander");
+const init = require("@gufai/init");
 //absolute link
 const pkg = require("../package.json");
 const constant = require("./constant");
@@ -25,9 +26,59 @@ async function core(args) {
     formatArgv();
     checkEnv();
     await checkGlobalUpdate();
+    registerCommand();
   } catch (e) {
     log.error(e.message);
   }
+}
+
+//注册命令
+function registerCommand() {
+  program
+    .version(pkg.version)
+    .name(Object.keys(pkg.bin)[0]) //脚手架名字
+    .usage("<command> [options]".green) //头部命令描述
+    .option("-d, --debug", "enable debug mode", false); //开启debug模式
+  // .option("-e, --env <name>", "get env name"); //环境变量 <xx> 获取设置参数
+
+  //注册命令
+  program
+    .command("init <projectName>")
+    .option("-f, --force", "是否强制初始化项目")
+    .action(init);
+
+  //debug事件监听
+  program.on("option:debug", function () {
+    //修改环境变量为debug
+    if (program.debug) {
+      process.env.LOG_LEVERL = "verbose";
+      log.level = process.env.LOG_LEVERL;
+      log.verbose("open debug log".red);
+    }
+  });
+
+  //对未知命令进行监听
+  program.on("command:*", function (operands) {
+    const availableCommands = program.commands.map((cmd) => cmd.name());
+    log.error(`unknown command '${operands[0]}'`);
+    availableCommands.length > 0 &&
+      console.log(`available commands :  ${availableCommands}`.green);
+    //TODO: 对最接近的命令进行提升并退出
+    // mySuggestBestMatch(operands[0], availableCommands);
+    // process.exitCode = 1;
+  });
+
+  //命令参数
+  const options = program.opts();
+  // console.log(options);
+
+  //格式化打印 最后执行
+  // if(program.args && program.args.length  < 1){
+  // console.log('提示help',program.args)
+  //提示help
+  // program.outputHelp();
+  // }
+  program.parse(process.argv);
 }
 
 async function checkGlobalUpdate() {
@@ -84,17 +135,17 @@ function createDefaultConfig() {
 //格式化入参
 function formatArgv() {
   console.log(argv);
-  checkArgvs();
+  // checkArgvs();
 }
 
 //开启debug 打印
-function checkArgvs() {
-  if (argv.debug) {
-    process.env.LOG_LEVERL = "verbose";
-    log.level = process.env.LOG_LEVERL;
-  }
-  log.verbose("open debug log".red);
-}
+// function checkArgvs() {
+//   if (argv.debug) {
+//     process.env.LOG_LEVERL = "verbose";
+//     log.level = process.env.LOG_LEVERL;
+//   }
+//   log.verbose("open debug log".red);
+// }
 
 //获取用户主目录的路径
 function checkUseHome() {
