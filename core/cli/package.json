@@ -31,15 +31,15 @@
     "url": "https://github.com/chen328/cli/issues"
   },
   "dependencies": {
+    "@gufai/exec": "file:../exec",
     "@gufai/get-npm-info": "file:../../utils/get-npm-info",
-    "@gufai/log": "file:../../utils/log",
     "@gufai/init": "file:../../commands/init",
+    "@gufai/log": "file:../../utils/log",
     "@gufai/utils": "^1.0.0",
     "colors": "^1.4.0",
     "commander": "^8.0.0",
     "dotenv": "^10.0.0",
     "import-local": "^3.0.2",
-    "minimist": "^1.2.5",
     "npmlog": "^4.1.2",
     "path-exists": "^4.0.0",
     "semver": "^7.3.5",
