@@ -24,6 +24,8 @@ async function core(args) {
     registerCommand();
   } catch (e) {
     log.error(e.message);
+    log.verbose(e);
+
   }
 }
 

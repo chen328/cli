@@ -8,7 +8,7 @@ function getNpmInfo(npmName, registry) {
   if (!npmName) {
     return null;
   }
-  const registryUrl = registry || "https://registry.npmjs.org";
+  const registryUrl = getRegistry(registry);
   const npmInfoUrl = urlJoin(registryUrl, npmName);
   //请求npm url 返回 包信息
   return axios
@@ -24,6 +24,11 @@ function getNpmInfo(npmName, registry) {
       return Promise.reject(err);
     });
 }
+
+function getRegistry(registry) {
+  return registry || "https://registry.npmjs.org"
+}
+
 /**
  *
  * @param {string} npmName
@@ -41,16 +46,26 @@ async function getNpmVersion(npmName, registry) {
 function getSemverVersion(baseVersion, versions) {
   return versions.filter(
     (version) => semver.satisfies(version, baseVersion) // true
-  ).sort((a,b) => semver.gt(a,b));
+  ).sort((a, b) => semver.gt(a, b));
 }
 
 async function getNpmSemverVersion(baseVersion, npmName, registry) {
   const versions = await getNpmVersion(npmName, registry);
   return getSemverVersion(baseVersion, versions);
 }
+//返回最新数组
+async function getNpmLatestVersion(npmName, registry) {
+  const versions = getNpmVersion(npmName,registry);
+  if(versions){
+    return versions.sort((a, b) => semver.gt(a, b))[0]
+  }
+  return null
+}
 
 module.exports = {
   getNpmInfo,
   getNpmVersion,
   getNpmSemverVersion,
+  getRegistry,
+  getNpmLatestVersion
 };

@@ -27,8 +27,12 @@
     "url": "https://github.com/chen328/cli/issues"
   },
   "dependencies": {
-    "@gufai/utils": "file:../../utils/utils",
     "@gufai/format-path": "file:../../utils/format-path",
+    "@gufai/get-npm-info": "file:../../utils/get-npm-info",
+    "@gufai/utils": "file:../../utils/utils",
+    "fs-extra": "^10.0.0",
+    "npminstall": "^4.11.0",
+    "path-exists": "^4.0.0",
     "pkg-dir": "^5.0.0"
   }
 }
