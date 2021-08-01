@@ -10,7 +10,7 @@ const userHome = require("user-home");
 const pathExists = require("path-exists").sync;
 const dotenv = require("dotenv");
 const { program } = require("commander");
-const init = require("@gufai/init");
+// const init = require("@gufai/init");
 const exec = require("@gufai/exec");
 
 //absolute link
@@ -32,7 +32,7 @@ async function core(args) {
 //执行前准备
 async function prepare(){
   checkPkgVersion();
-  checkNodeVersion();
+  // checkNodeVersion();
   checkRoot();
   checkUseHome();
   checkEnv();
@@ -162,15 +162,7 @@ function checkRoot() {
   }
 }
 
-//检查node版本号
-function checkNodeVersion() {
-  const currentVersion = process.version;
-  const lowestVersion = constant.LOWEST_NODE_VERSION;
-  // current >= lowerVersion
-  if (!semver.gte(currentVersion, lowestVersion)) {
-    throw new Error(`cli 需要安装v${lowestVersion} 以上版本的node`.red);
-  }
-}
+
 //检查版本号
 function checkPkgVersion() {
   log.info("version ->", pkg.version);

@@ -1,9 +1,9 @@
 {
-  "name": "@gufai/init",
-  "version": "1.0.2",
-  "description": "cli init",
+  "name": "@gufai/command",
+  "version": "1.0.0",
+  "description": "command",
   "author": "chenguanghui <guanghui.c@shulidata.com>",
-  "homepage": "https://github.com/chen328/cli/tree/main/core/init#readme",
+  "homepage": "https://github.com/chen328/cli/tree/main/core/Command#readme",
   "license": "ISC",
   "main": "lib/index.js",
   "directories": {
@@ -27,6 +27,8 @@
     "url": "https://github.com/chen328/cli/issues"
   },
   "dependencies": {
-    "@gufai/command": "file:../../models/command"
+    "color": "^4.0.0",
+    "semver": "^7.3.5",
+    "@gufai/log": "file:../../utils/log"  
   }
 }

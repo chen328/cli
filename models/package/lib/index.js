@@ -94,9 +94,9 @@ class Package {
     }
     //获取入口文件的路径
     getRootFilePath() {
-        function _rootPath(path) {
+        function _rootPath(targetPath) {
             //1.获取package.json所在文件目录
-            const dir = pkgDir(path);
+            const dir = pkgDir(targetPath);
             if (dir) {
                 //2.读取package.json
                 const pkgFile = require(path.resolve(dir, 'package.json'))
@@ -109,9 +109,9 @@ class Package {
             return null
         }
         if (this.storePath) {
-            _rootPath(this.cacheFilePath)
+           return _rootPath(this.cacheFilePath)
         } else {
-            _rootPath(this.targetPath)
+           return  _rootPath(this.targetPath)
         }
 
 
