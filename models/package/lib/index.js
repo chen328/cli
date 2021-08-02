@@ -21,7 +21,7 @@ class Package {
         }
         //package路径
         this.targetPath = options.targetPath;
-        //package存储路劲
+        //package存储路径
         this.storePath = options.storePath;
         //package name
         this.packageName = options.packageName;

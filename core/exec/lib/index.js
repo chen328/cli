@@ -84,7 +84,7 @@ async function exec(projectName, options, command) {
     }
   }
 }
-
+//兼容win 开启子进程 执行node
 function spawn(command, args, options) {
   //window 下执行 ("cmd",['/c','node','-e',code])
   const isWin32 = process.platform === "win32";
