@@ -29,6 +29,6 @@
   "dependencies": {
     "color": "^4.0.0",
     "semver": "^7.3.5",
-    "@gufai/log": "file:../../utils/log"  
+    "@gufai/log": "file:../../utils/log"
   }
 }
