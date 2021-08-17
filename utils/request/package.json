@@ -1,9 +1,9 @@
 {
-  "name": "@gufai/init",
-  "version": "1.0.2",
-  "description": "cli init",
+  "name": "@gufai/request",
+  "version": "1.0.0",
+  "description": "> TODO: description",
   "author": "chenguanghui <guanghui.c@shulidata.com>",
-  "homepage": "https://github.com/chen328/cli/tree/main/core/init#readme",
+  "homepage": "https://github.com/chen328/cli/tree/main/core/request#readme",
   "license": "ISC",
   "main": "lib/index.js",
   "directories": {
@@ -14,7 +14,7 @@
     "lib"
   ],
   "publishConfig": {
-    "access": "public"
+    "registry": "http://verdaccio.shuli.com"
   },
   "repository": {
     "type": "git",
@@ -27,13 +27,6 @@
     "url": "https://github.com/chen328/cli/issues"
   },
   "dependencies": {
-    "@gufai/command": "file:../../models/command",
-    "@gufai/log": "file:../../utils/log",
-    "@gufai/package": "file:../../models/package",
-    "@gufai/request": "file:../../utils/request",
-    "fs-extra": "^10.0.0",
-    "inquirer": "^8.1.2",
-    "semver": "^7.3.5",
-    "user-home": "^3.0.0"
+    "axios": "^0.21.1"
   }
 }
