@@ -26,7 +26,7 @@ function getNpmInfo(npmName, registry) {
 }
 
 function getRegistry(registry) {
-  return registry || "https://registry.npmjs.org"
+  return registry || "https://registry.npmjs.org";
 }
 
 /**
@@ -44,9 +44,11 @@ async function getNpmVersion(npmName, registry) {
 
 //返回大于现在版本的版本数组
 function getSemverVersion(baseVersion, versions) {
-  return versions.filter(
-    (version) => semver.satisfies(version, baseVersion) // true
-  ).sort((a, b) => semver.gt(a, b));
+  return versions
+    .filter(
+      (version) => semver.satisfies(version, baseVersion) // true
+    )
+    .sort((a, b) => semver.gt(a, b));
 }
 
 async function getNpmSemverVersion(baseVersion, npmName, registry) {
@@ -54,12 +56,12 @@ async function getNpmSemverVersion(baseVersion, npmName, registry) {
   return getSemverVersion(baseVersion, versions);
 }
 //返回最新数组
-async function getNpmLatestVersion(npmName, registry) {
-  const versions = getNpmVersion(npmName,registry);
-  if(versions){
-    return versions.sort((a, b) => semver.gt(a, b))[0]
+async function getNpmLatestVersion(npmName, registry = getRegistry()) {
+  const versions = await getNpmVersion(npmName, registry);
+  if (versions) {
+    return versions.sort((a, b) => semver.gt(a, b))[0];
   }
-  return null
+  return null;
 }
 
 module.exports = {
@@ -67,5 +69,5 @@ module.exports = {
   getNpmVersion,
   getNpmSemverVersion,
   getRegistry,
-  getNpmLatestVersion
+  getNpmLatestVersion,
 };

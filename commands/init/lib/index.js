@@ -10,14 +10,24 @@ const log = require("@gufai/log");
 const getProjectTemplate = require("./getProjectTemplate");
 const Package = require("@gufai/package");
 const useHome = require("user-home");
+const { spinnerStart, execAsync } = require("@gufai/utils");
+const kebabCase = require("kebab-case");
+const glob = require("glob");
+const ejs = require("ejs");
 
 const TYPE_PROJECT = "project";
 const TYPE_COMPONENT = "component";
+
+const TEMPLATE_TYPE_NORMAL = "normal";
+const TEMPLATE_TYPE_CUSTOM = "custom";
+const WHITE_COMMND = ["npm", "cnpm", "yarn"];
 
 class InitCommand extends Command {
   init() {
     this.projectName = this._argv[0] || "";
     this.force = !!this._cmd.force;
+    this.templateInfo = {};
+    this.templateNpm = null;
   }
   async exec() {
     try {
@@ -30,7 +40,16 @@ class InitCommand extends Command {
       //2.下载模版
       await this.downloadTemplate();
       //3.安装模板
+      await this.installTemplate();
     } catch (error) {}
+  }
+
+  //检查命令是否在白名单
+  checkCommand(cmd) {
+    if (WHITE_COMMND.includes(cmd)) {
+      return cmd;
+    }
+    return null;
   }
 
   async downloadTemplate() {
@@ -40,20 +59,144 @@ class InitCommand extends Command {
     const templateInfo = this.template.find(
       (item) => item.npmName === projectTemplate
     );
-    const targetPath = path.resolve(useHome, ".cli", "template");
-    const storePath = path.resolve(useHome, ".cli", "template", "node_modules");
+    const targetPath = path.resolve(useHome, ".cli-dev", "template");
+    const storePath = path.resolve(
+      useHome,
+      ".cli-dev",
+      "template",
+      "node_modules"
+    );
     const { npmName, version } = templateInfo;
-    const templateNpm = new Package({
+    this.templateInfo = templateInfo;
+    this.templateNpm = new Package({
       targetPath,
       storePath,
       packageName: npmName,
       packageVersion: version,
     });
-    if (!templateNpm.exists) {
-      await templateNpm.install();
+    if (!(await this.templateNpm.exists())) {
+      const spinner = spinnerStart("正在下载模板...");
+      await this.templateNpm.install();
+      spinner.stop(true);
+      log.success("下载模板成功");
     } else {
-      await templateNpm.update();
+      const spinner = spinnerStart("正在更新模板...");
+      await this.templateNpm.update();
+      spinner.stop(true);
+      log.success("更新模板成功");
     }
+  }
+
+  async installTemplate() {
+    if (this.templateInfo) {
+      if (
+        this.templateInfo.type &&
+        this.templateInfo.type === TEMPLATE_TYPE_CUSTOM
+      ) {
+        //自定义安装
+        await this.installCustomTemplate();
+      } else {
+        //标准安装
+        await this.installNormalTemplate();
+      }
+    } else {
+      throw new Error("项目模板信息不存在!");
+    }
+  }
+
+  async execCommand(commandStr, errMsg = "执行异常") {
+    if (commandStr) {
+      const cmdArr = commandStr.split(" ");
+      const cmd = this.checkCommand(cmdArr[0]);
+      const args = cmdArr.slice(1);
+      const result = await execAsync(cmd, args, {
+        stdio: "inherit",
+        cwd: process.cwd(),
+      });
+      if (result !== 0) {
+        throw new Error("依赖安装异常");
+      }
+      return result;
+    }
+  }
+  //ejs 模板渲染替换
+  async ejsRender(option = { ignore: ["node_modules/**", "public/**"] }) {
+    const dir = process.cwd();
+    const projectInfo = this.projectInfo;
+    return new Promise((resolve, reject) => {
+      //匹配所有文件
+      glob(
+        "**",
+        {
+          cwd: dir,
+          nodir: true,
+          ignore: option.ignore || '',
+        },
+        (err, files) => {
+          if (err) {
+            reject(err);
+          }
+          Promise.all(
+            files.map((file) => {
+              const filePath = path.join(dir, file);
+              return new Promise((res, rej) => {
+                //替换文件中替换符
+                ejs.renderFile(filePath, projectInfo, {}, (err, result) => {
+                  if (err) {
+                    rej(err);
+                  } else {
+                    fse.writeFileSync(filePath, result);
+                    res(result);
+                  }
+                });
+              });
+            })
+          )
+            .then(() => {
+              resolve()
+            })
+            .catch((err) => {
+              log.verbose(err)
+              reject(err)
+            });
+        }
+      );
+    });
+  }
+
+  async installNormalTemplate() {
+    console.log("安装标准");
+    const spinner = spinnerStart("正在安装模板...");
+    try {
+      //拷贝模板代码至目录
+      const templatePath = path.resolve(
+        this.templateNpm.cacheFilePath,
+        "template"
+      );
+      const currentPath = process.cwd();
+      fse.ensureDirSync(templatePath); //目录不存在时创建
+      fse.ensureDirSync(currentPath);
+      fse.copySync(templatePath, currentPath);
+    } catch (e) {
+      throw e;
+    } finally {
+      spinner.stop(true);
+    }
+    const { installCommand, startCommand, ignore } = this.templateInfo;
+    //获取模板配置中忽略项
+    const templateIgnore = ignore ? ignore : [];
+    const option = {
+      ignore: ["node_modules/**", "public/**", ...templateIgnore],
+    };
+    await this.ejsRender(option);
+    //依赖安装
+    await this.execCommand(installCommand, "依赖安装异常");
+    //启动命令执行
+    await this.execCommand(startCommand, "启动名称异常");
+  }
+
+  async installCustomTemplate() {
+    console.log("安装自定义");
   }
 
   async prepare() {
@@ -101,7 +244,15 @@ class InitCommand extends Command {
   }
 
   async getProjectInfo() {
+    function isVaildName(v) {
+      return !/^[a-zA-Z]+([-_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v);
+    }
     let projectInfo = {};
+    let isProjectNameVaild = false;
+    if (!isVaildName(this.projectName)) {
+      isProjectNameVaild = true;
+      projectInfo.projectName = this.projectName;
+    }
     //选择创建项目或组件
     const { type } = await inquirer.prompt({
       type: "list",
@@ -113,30 +264,29 @@ class InitCommand extends Command {
         { name: "组件", value: TYPE_PROJECT },
       ],
     });
+    this.template = this.template.filter((item) => item.tag.includes(type));
     if (type === TYPE_COMPONENT) {
-      const project = await inquirer.prompt([
-        {
-          type: "input",
-          name: "projectName",
-          message: "请输入项目名称",
-          default: "",
-          validate: function (v) {
-            //不合法名称提示
-            var done = this.async();
-            setTimeout(function () {
-              if (
-                !/^[a-zA-Z]+([-_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(v)
-              ) {
-                done("请输入合法的项目名称");
-                return;
-              }
-              done(null, true);
-            }, 100);
-          },
-          filter: function (v) {
-            return v;
-          },
+      const projectNamePrompt = {
+        type: "input",
+        name: "projectName",
+        message: "请输入项目名称",
+        default: "",
+        validate: function (v) {
+          //不合法名称提示
+          var done = this.async();
+          setTimeout(function () {
+            if (isVaildName(v)) {
+              done("请输入合法的项目名称");
+              return;
+            }
+            done(null, true);
+          }, 100);
         },
+        filter: function (v) {
+          return v;
+        },
+      };
+      let promptArr = [
         {
           type: "input",
           name: "projectVersion",
@@ -163,12 +313,26 @@ class InitCommand extends Command {
           message: "请选择项目模板",
           choices: this.createTemplateChoice(),
         },
-      ]);
+      ];
+      if (!isProjectNameVaild) {
+        promptArr.unshift(projectNamePrompt);
+      }
+      const project = await inquirer.prompt(promptArr);
       projectInfo = {
         type,
+        ...projectInfo,
         ...project,
       };
     } else if (type === TYPE_PROJECT) {
+    }
+    //生产classname
+    if (projectInfo.projectName) {
+      projectInfo.name = projectInfo.projectName;
+      projectInfo.version = projectInfo.projectVersion;
+      projectInfo.className = kebabCase(projectInfo.projectName).replace(
+        /^-/,
+        ""
+      );
     }
     //获取项目的基本信息
     return projectInfo;
@@ -193,8 +357,6 @@ class InitCommand extends Command {
 }
 
 function init(argv) {
-  // projectName, options, command
-  // console.log(projectName, options,process.env.CLI_TARGET_PATH);
   return new InitCommand(argv);
 }
 

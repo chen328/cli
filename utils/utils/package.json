@@ -28,6 +28,7 @@
     "url": "https://github.com/chen328/cli/issues"
   },
   "dependencies": {
+    "cli-spinner": "^0.2.10",
     "colors": "^1.4.0"
   },
   "gitHead": "cf9fabc2d40acdeece29b83155e8252f49f7a9c4"
